@@ -52,16 +52,8 @@ except:
 ## find_urls("the internet is awesome #worldwideweb") should return [], empty list
 
 def find_urls(string):
-	
-	url = re.findall("(http.?.+?\..+.+\.[a-z]{2,3})",string)
-	url_list = []
-	
-		#url_list = re.findall(r'^http[s]?:\/\/?[\da-z\.-]+\.[a-z\.]{2,6}[\/\w\.-]*', string)
+	url = re.findall("https?:\/\/[A-Za-z0-9]{2,}(?:\.[A-Za-z0-9]{1,})+", string)
 	return url
-
-
-
-
 
 
 ## PART 2 (a) - Define a function called get_umsi_data.
