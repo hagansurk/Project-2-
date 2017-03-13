@@ -57,7 +57,6 @@ def find_urls(string):
 	url = re.findall("https?:\/\/[A-Za-z0-9]{2,}(?:\.[A-Za-z0-9]{1,})+", string)
 	return url
 
-
 ## PART 2 (a) - Define a function called get_umsi_data.
 ## INPUT: N/A. No input.
 ## The function should check if there is any cached data for the UMSI directory in your cached file -- if so, return it, and if not, the function should access each page of the directory, get the HTML associated with it, append that HTML string to a list. The function should cache (save) that list when it is accumulated.
@@ -72,34 +71,29 @@ def get_umsi_data():
 	html_data = []
 	unique_id = "umsi_directory_data"
 	if unique_id in CACHE_DICTION:
-		print ('getting data from cache')
-		html_data = CACHE_DICTION[unique_id]
+		return CACHE_DICTION[unique_id]
 	else:
-		print ('getting data from internet')
 		for i in range(12):
 			base_url = "https://www.si.umich.edu/directory?field_person_firstname_value=&field_person_lastname_value=&rid=All"
-			r = requests.get(base_url, headers = {'User-Agent': 'SI_Class'})
-			get_url = r.text
+			r = requests.get(base_url, headers={'User-Agent': 'SI_Class'}).text
 			html_data.append(get_url)
-		CACHE_DICTION[unique_id] = html_data
-		f = open(CACHE_FILE, 'w')
-		f.write(json.dumps(CACHE_DICTION))
-		f.close()
-	return html_data
+			CACHE_DICTION[unique_id] = html_data
+			f = open(CACHE_FILE, 'w')
+			f.write(json.dumps(CACHE_DICTION))
+			f.close()
 	
-html_data = get_umsi_data()
-a = type(html_data)
-print(a)
-soup = BeautifulSoup(html_data, 'html.parser')
-people = soup.find_all("div", {"class": "views-row"})
-
+	
 ## PART 2 (b) - Create a dictionary saved in a variable umsi_titles 
 ## whose keys are UMSI people's names, and whose associated values are those people's titles, e.g. "PhD student" or "Associate Professor of Information"...
-
-
-
-
-
+get_umsi_data()
+umsi_titles = {}
+for page in get_umsi_data():
+	soup = BeautifulSoup(page, 'html.parser')
+	people = soup.find_all("div", {"class": "views-row"})
+	for names in people:
+		person = names.find('div', {'class':'field-name-title'})
+		title = names.find('div', {'class':'field-name-field-person-titles'})
+		umsi_titles[person.string] = title.string
 
 
 ## PART 3 (a) - Define a function get_five_tweets
@@ -110,14 +104,12 @@ people = soup.find_all("div", {"class": "views-row"})
 def get_five_tweets(phrase):
 	unique_id = "twitter_{}".format(phrase)
 	if unique_id in CACHE_DICTION:
-		print('using cached data for', phrase)
 		twitter_results = CACHE_DICTION[unique_id]
 	else:
-		print('getting data from internet for', phrase)
-		twitter_results = api.user_timeline(phrase)
-		CACHE_DICTION[unique_id] = 	twitter_results
+		twitter_results = api.search(q=phrase)
+		CACHE_DICTION[unique_id] = twitter_results
 		f = open(CACHE_FILE, 'w')
-		f.write(json.dumps[CACHE_DICTION])
+		f.write(json.dumps(CACHE_DICTION))
 		f.close()
 	tweets = []
 	for tweet in twitter_results:
@@ -126,13 +118,14 @@ def get_five_tweets(phrase):
  
 
 ## PART 3 (b) - Write one line of code to invoke the get_five_tweets function with the phrase "University of Michigan" and save the result in a variable five_tweets.
-mich_tweets = get_five_tweets("University of Michigan")
+five_tweets = get_five_tweets("University of Michigan")
+
 
 ## PART 3 (c) - Iterate over the five_tweets list, invoke the find_urls function that you defined in Part 1 on each element of the list, and accumulate a new list of each of the total URLs in all five of those tweets in a variable called tweet_urls_found. 
-twitter_urls = []
-for num in range(5):
-	urls = find_urls(five_tweets[num])
-	twitter_urls.append(urls)
+tweet_urls_found = ()
+for tweet in five_tweets:
+	url = find_urls(tweet)
+	tweet_urls_found =  tweet_urls_found + tuple(url)
 
 
 ########### TESTS; DO NOT CHANGE ANY CODE BELOW THIS LINE! ###########
